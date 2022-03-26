@@ -1,0 +1,65 @@
+# Phi_{k,n} operator has k-simplices of G as vertices
+# 2 subgraphs are adjacent if they lie in common simplex with at most n vertices (pg. 136) 
+# https://docs.scipy.org/doc/scipy/reference/generated/scipy.spatial.Delaunay.html
+
+# k simplex is complex graph with k+1 vertices
+
+def convert_tuple(list):
+    return tuple(i for i in list)
+
+def Phi(g, k,n):
+    
+    all_cliques= nx.enumerate_all_cliques(g)
+
+    k_cliques=[x for x in all_cliques if len(x)== k+1 ]
+    
+    # must generate simplex of m vertices
+    n_cliques = [x for x in all_cliques if len(x) <= n]
+
+    # create new graph with vertex set k_cliques
+
+    # map from index to set
+    map1 = {}
+    map2 = {} # backwards map
+    ind1=0
+
+    for x in k_cliques:
+        #print("x is", x)
+        xtup = convert_tuple(x)
+        map1[ind1] = x         
+        map2[xtup] = ind1
+        ind1= ind1+1
+
+    adj_mat = np.zeros((ind1,ind1))
+    new_edge_list = []
+
+    # check adjacency up to m vertices
+    ind1 =0
+    ind2 = 0
+    for c1 in k_cliques:
+        for c2 in k_cliques:
+            c1tup = convert_tuple(c1)
+            c2tup = convert_tuple(c2)
+            index1 = map2[c1tup]
+            index2 = map2[c2tup]
+            # compare lists for same elements
+            if ind1== ind2:#c1 == c2:
+                continue
+            counter1 = collections.Counter(c1)
+            counter2 = collections.Counter(c2)
+            set_list1 = set(tuple(d for d in sorted(counter1)))
+            set_list2 = set(tuple(d for d in sorted(counter2)))
+            intersect = set_list1.intersection(set_list2)
+            ilen = len(intersect)
+            print("ilen is", ilen)
+            # modification to the input of the operator: if there is n=1 or more vertices in common
+            if ilen>= n:
+                # add edge
+                adj_mat[index1, index2] = 1
+                adj_mat[index2, index1] = 1
+                new_edge_list.append((index1, index2))
+                new_edge_list.append((index2, index1))
+            ind2 = ind2+1
+        ind1 = ind1+1
+
+    return adj_mat, new_edge_list, k_cliques    
