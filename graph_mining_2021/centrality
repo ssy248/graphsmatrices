@@ -1,0 +1,23 @@
+#calculate centrality based on shortest path matrix entries -> average them for vertex x
+
+def centrality(v, sp_mat):
+    row = sp_mat[v]
+    mn = np.mean(row)
+    recip = 1/(mn)
+    return recip
+
+def valued_centrality(v, sp_mat):
+    row = sp_mat[v]
+    r1 = np.array(row, dtype=np.float64)
+    return np.reciprocal(r1)
+
+def jordan_centrality(v, sp_mat):
+    row = sp_mat[v]
+    m = max(row)
+    return (1/m)
+
+# flow centrality <-> gomory hu tree?
+
+# factor analysis -> correlation -> accuracy?
+
+# min wt cycle basis and the dag?
