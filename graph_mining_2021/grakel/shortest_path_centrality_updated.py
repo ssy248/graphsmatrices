@@ -90,3 +90,41 @@ class ShortestPath(Kernel):
                         else:
                             sp_counts[i][idx] = 1
             
+
+    def fit_transform(self, X, y=None):
+        """Fit and transform, on the same dataset.
+        Parameters
+        ----------
+        X : iterable
+            Each element must be an iterable with at most three features and at
+            least one. The first that is obligatory is a valid graph structure
+            (adjacency matrix or edge_dictionary) while the second is
+            node_labels and the third edge_labels (that fitting the given graph
+            format).
+        y : Object, default=None
+            Ignored argument, added for the pipeline.
+        Returns
+        -------
+        K : numpy array, shape = [n_targets, n_input_graphs]
+            corresponding to the kernel matrix, a calculation between
+            all pairs of graphs between target an features
+        """
+        self._method_calling = 2
+        self.fit(X)
+
+        # calculate feature matrices.
+        phi_x = np.zeros(shape=(self._nx, len(self._enum)))
+
+        for i in self.X.keys():
+            for j in self.X[i].keys():
+                phi_x[i, j] = self.X[i][j]
+
+        # Transform - calculate kernel matrix
+        self._phi_X = phi_x
+        km = np.dot(phi_x, phi_x.T)
+
+        self._X_diag = np.diagonal(km)
+        if self.normalize:
+            return np.divide(km, np.sqrt(np.outer(self._X_diag, self._X_diag)))
+        else:
+            return km
